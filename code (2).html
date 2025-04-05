@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rozszerzony Generator Zadań Tekstowych - Egzamin Ósmoklasisty</title>
+    <style>
+        /* --- CSS Styles (bez zmian w stosunku do poprzedniej wersji) --- */
+        :root {
+            --primary-color: #4a90e2; /* Niebieski */
+            --secondary-color: #f4f7f6; /* Jasnoszary tło */
+            --text-color: #333;
+            --correct-color: #28a745; /* Zielony */
+            --incorrect-color: #dc3545; /* Czerwony */
+            --white-color: #ffffff;
+            --border-color: #ddd;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--white-color);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            max-width: 700px;
+            width: 100%;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        .topic-selector {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .topic-selector h2 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .topic-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .topic-options label {
+            display: flex;
+            align-items: center;
+            background-color: #e9ecef;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-size: 0.95em;
+        }
+
+        .topic-options input[type="radio"] {
+           display: none; /* Ukryj domyślne radio */
+        }
+
+        /* Niestandardowy wygląd radio */
+        .topic-options label::before {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: var(--white-color);
+            transition: background-color 0.3s ease;
+        }
+
+        .topic-options input[type="radio"]:checked + label::before {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+         .topic-options input[type="radio"]:checked + label {
+             background-color: #d1e3f8; /* Jaśniejszy niebieski dla zaznaczonej etykiety */
+             font-weight: bold;
+         }
+
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #3a7bc8; /* Ciemniejszy niebieski */
+        }
+         button:active {
+            transform: scale(0.98);
+         }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #questionArea {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            min-height: 60px; /* Minimalna wysokość dla pytania */
+        }
+
+        #questionText {
+            font-size: 1.1em;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .answer-section {
+            margin-top: 20px;
+        }
+
+        #userAnswer {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+
+        #feedbackArea {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 5px solid var(--border-color); /* Domyślny pasek boczny */
+        }
+
+        #result {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        #explanation {
+            font-size: 0.95em;
+            color: #555;
+            line-height: 1.5;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 10px;
+            white-space: pre-wrap; /* Zachowaj formatowanie wyjaśnienia */
+        }
+
+        .correct {
+            color: var(--correct-color);
+            border-left-color: var(--correct-color);
+            background-color: #e9f7ec;
+        }
+
+        .incorrect {
+            color: var(--incorrect-color);
+            border-left-color: var(--incorrect-color);
+            background-color: #fdedee;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            .topic-options {
+                 flex-direction: column;
+                 align-items: stretch; /* Rozciągnij etykiety */
+            }
+             .topic-options label {
+                 justify-content: center; /* Wycentruj tekst w etykietach */
+             }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Rozszerzony Generator Zadań Tekstowych</h1>
+
+    <div class="topic-selector">
+        <h2>Wybierz temat:</h2>
+        <div class="topic-options" id="topicOptions">
+            <!-- Opcje tematów zostaną dodane przez JavaScript -->
+        </div>
+    </div>
+
+    <button id="generateBtn">Generuj Zadanie</button>
+
+    <div id="questionArea" style="display: none;">
+        <h3>Zadanie:</h3>
+        <p id="questionText">Tutaj pojawi się treść zadania...</p>
+    </div>
+
+    <div class="answer-section" id="answerSection" style="display: none;">
+        <label for="userAnswer">Twoja odpowiedź:</label>
+        <input type="text" id="userAnswer" placeholder="Wpisz odpowiedź (np. 150, 30 km, 1/9)">
+        <button id="checkBtn">Sprawdź Odpowiedź</button>
+    </div>
+
+    <div id="feedbackArea" style="display: none;">
+        <p id="result"></p>
+        <p id="explanation"></p>
+    </div>
+
+</div>
+
+<script>
+    // --- JavaScript Logic ---
+
+    // --- Helper Functions (bez zmian) ---
+    function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+     function getRandomFloat(min, max, decimals) {
+        const str = (Math.random() * (max - min) + min).toFixed(decimals);
+        return parseFloat(str);
+    }
+
+     function round(value, decimals) {
+        return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    }
+
+    // --- ROZSZERZONA BAZA GENERATORÓW ZADAŃ ---
+    const questionGenerators = [
+        // === Kategoria: Jedna niewiadoma ===
+        // Typ 1: Podział kwoty między osoby (różnice) - jak 'naklejki'
+        {
+            topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_podzialKwotyRoznice',
+            generator: () => {
+                const x = getRandomInt(20, 100); // Kwota dla osoby 1 (np. najmniej)
+                const diff1 = getRandomInt(5, 30);
+                const diff2 = getRandomInt(10, 40);
+                const osoba2 = x + diff1;
+                const osoba3 = osoba2 + diff2; // Lub np. x + diff2, lub 2*x - diff2 etc. - różne warianty
+                const suma = x + osoba2 + osoba3;
+                const question = `Trzy osoby podzieliły między siebie kwotę ${suma} zł. Druga osoba otrzymała o ${diff1} zł więcej niż pierwsza, a trzecia osoba o ${diff2} zł więcej niż druga. Ile złotych otrzymała każda osoba?`;
+                const answer = `Osoba 1: ${x} zł, Osoba 2: ${osoba2} zł, Osoba 3: ${osoba3} zł`;
+                const explanation = `Niech x = kwota dla osoby 1.
+Osoba 2 = x + ${diff1}
+Osoba 3 = Osoba 2 + ${diff2} = (x + ${diff1}) + ${diff2} = x + ${diff1 + diff2}
+Suma: x + (x + ${diff1}) + (x + ${diff1 + diff2}) = ${suma}
+3x + ${2 * diff1 + diff2} = ${suma}
+3x = ${suma - (2 * diff1 + diff2)}
+x = ${x}
+Osoba 1: ${x} zł
+Osoba 2: ${x} + ${diff1} = ${osoba2} zł
+Osoba 3: ${osoba2} + ${diff2} = ${osoba3} zł
+Spr: ${x} + ${osoba2} + ${osoba3} = ${suma}`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 2: Kolejne liczby nieparzyste
+        {
+            topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_liczbyNieparzyste',
+            generator: () => {
+                const firstOdd = getRandomInt(5, 50) * 2 + 1; // Losowa liczba nieparzysta
+                const secondOdd = firstOdd + 2;
+                const thirdOdd = firstOdd + 4;
+                const sum = firstOdd + secondOdd + thirdOdd;
+                const question = `Suma trzech kolejnych liczb nieparzystych wynosi ${sum}. Znajdź te liczby.`;
+                const answer = `${firstOdd}, ${secondOdd}, ${thirdOdd}`;
+                const explanation = `Niech x = pierwsza liczba nieparzysta.
+Kolejne nieparzyste: x + 2, x + 4.
+Równanie: x + (x + 2) + (x + 4) = ${sum}
+3x + 6 = ${sum}
+3x = ${sum - 6}
+x = ${firstOdd}
+Liczby: ${firstOdd}, ${firstOdd + 2}, ${firstOdd + 4}.`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 3: Zadanie wiekowe (suma wieku teraz)
+        {
+            topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_wiekSumaTeraz',
+            generator: () => {
+                const wiekMamy = getRandomInt(25, 45);
+                const roznica = getRandomInt(15, 30);
+                if (wiekMamy <= roznica) return questionGenerators.find(g=>g.id === 'jn_wiekSumaTeraz').generator(); // Mama musi być starsza
+                const wiekCorki = wiekMamy - roznica;
+                const suma = wiekMamy + wiekCorki;
+                const question = `Mama i córka mają razem ${suma} lat. Mama jest o ${roznica} lat starsza od córki. Ile lat ma każda z nich?`;
+                const answer = `Córka ${wiekCorki}, Mama ${wiekMamy}`;
+                const explanation = `Niech x = wiek córki.
+Wiek mamy = x + ${roznica}.
+Suma wieku: x + (x + ${roznica}) = ${suma}
+2x + ${roznica} = ${suma}
+2x = ${suma - roznica}
+x = ${wiekCorki}
+Wiek córki: ${wiekCorki} lat.
+Wiek mamy: ${wiekCorki} + ${roznica} = ${wiekMamy} lat.
+Spr: ${wiekCorki} + ${wiekMamy} = ${suma}`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 4: Zadanie wiekowe (za ileś lat)
+        {
+            topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_wiekZaLata',
+            generator: () => {
+                const wiekOjcaTeraz = getRandomInt(30, 50);
+                const wiekSynaTeraz = getRandomInt(5, 15);
+                 if (wiekOjcaTeraz <= wiekSynaTeraz + 15) return questionGenerators.find(g=>g.id === 'jn_wiekZaLata').generator(); // Zapewnij sensowną różnicę wieku
+
+                 // Znajdźmy rok, w którym ojciec będzie np. 3 razy starszy
+                 // (wiekOjcaTeraz + x) = 3 * (wiekSynaTeraz + x)
+                 // wiekOjcaTeraz + x = 3 * wiekSynaTeraz + 3x
+                 // wiekOjcaTeraz - 3 * wiekSynaTeraz = 2x
+                 // x = (wiekOjcaTeraz - 3 * wiekSynaTeraz) / 2
+                 let multiplier = getRandomInt(2, 4);
+                 let lataX = (wiekOjcaTeraz - multiplier * wiekSynaTeraz) / (multiplier - 1);
+
+                 // Jeśli x nie jest dodatnią liczbą całkowitą, poszukaj innego mnożnika lub wygeneruj ponownie
+                 if (lataX <= 0 || lataX % 1 !== 0) {
+                    multiplier = 2; // spróbujmy dla 2
+                    lataX = (wiekOjcaTeraz - multiplier * wiekSynaTeraz) / (multiplier - 1);
+                    if (lataX <= 0 || lataX % 1 !== 0) {
+                        multiplier = 3; // spróbujmy dla 3
+                        lataX = (wiekOjcaTeraz - multiplier * wiekSynaTeraz) / (multiplier - 1);
+                         if (lataX <= 0 || lataX % 1 !== 0) {
+                             return questionGenerators.find(g=>g.id === 'jn_wiekZaLata').generator(); // Retry if no good multiplier found
+                         }
+                    }
+                 }
+
+                const question = `Ojciec ma obecnie ${wiekOjcaTeraz} lat, a jego syn ${wiekSynaTeraz} lat. Za ile lat ojciec będzie ${multiplier} razy starszy od syna?`;
+                const answer = `${lataX} lat`;
+                const explanation = `Niech x = szukana liczba lat.
+Za x lat:
+Wiek ojca = ${wiekOjcaTeraz} + x
+Wiek syna = ${wiekSynaTeraz} + x
+Warunek: Wiek ojca za x lat = ${multiplier} * (Wiek syna za x lat)
+${wiekOjcaTeraz} + x = ${multiplier} * (${wiekSynaTeraz} + x)
+${wiekOjcaTeraz} + x = ${multiplier * wiekSynaTeraz} + ${multiplier}x
+${wiekOjcaTeraz} - ${multiplier * wiekSynaTeraz} = ${multiplier}x - x
+${wiekOjcaTeraz - multiplier * wiekSynaTeraz} = ${multiplier - 1}x
+x = ${wiekOjcaTeraz - multiplier * wiekSynaTeraz} / ${multiplier - 1}
+x = ${lataX}
+Odpowiedź: Za ${lataX} lat.`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 5: Figura geometryczna (obwód -> bok)
+        {
+            topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_obwodTrojkata',
+            generator: () => {
+                const a = getRandomInt(5, 20); // pierwszy bok
+                const diff1 = getRandomInt(1, 5);
+                const diff2 = getRandomInt(1, 8);
+                const b = a + diff1;
+                const c = a + diff2; // lub b + diff2 etc.
+                 // Warunek trójkąta
+                if (a + b <= c || a + c <= b || b + c <= a) return questionGenerators.find(g=>g.id === 'jn_obwodTrojkata').generator();
+                const obwod = a + b + c;
+                const question = `Obwód trójkąta wynosi ${obwod} cm. Drugi bok jest o ${diff1} cm dłuższy od pierwszego, a trzeci bok jest o ${diff2} cm dłuższy od pierwszego. Oblicz długości boków tego trójkąta.`;
+                const answer = `${a} cm, ${b} cm, ${c} cm`;
+                const explanation = `Niech x = długość pierwszego boku.
+Drugi bok = x + ${diff1}
+Trzeci bok = x + ${diff2}
+Obwód = bok1 + bok2 + bok3
+${obwod} = x + (x + ${diff1}) + (x + ${diff2})
+${obwod} = 3x + ${diff1 + diff2}
+${obwod} - ${diff1 + diff2} = 3x
+x = ${a} cm
+Boki: ${a} cm, ${a + diff1} cm, ${a + diff2} cm.`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 6: Liczba dwucyfrowa
+        {
+             topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_liczbaDwucyfrowa',
+             generator: () => {
+                 const dz = getRandomInt(1, 9); // cyfra dziesiątek
+                 const jed = getRandomInt(0, 9);
+                 if (dz === jed) return questionGenerators.find(g=>g.id === 'jn_liczbaDwucyfrowa').generator(); // Unikaj takich samych cyfr dla urozmaicenia
+                 const liczba = dz * 10 + jed;
+                 const sumaCyfr = dz + jed;
+                 let warunek;
+                 let opisWarunku;
+                 // Różne możliwe warunki, np.:
+                 if (Math.random() < 0.5 && dz > jed) {
+                    warunek = dz - jed;
+                    opisWarunku = `Cyfra dziesiątek jest o ${warunek} większa od cyfry jedności.`;
+                 } else if (jed > dz) {
+                    warunek = jed - dz;
+                    opisWarunku = `Cyfra jedności jest o ${warunek} większa od cyfry dziesiątek.`;
+                 }
+                 else {
+                     // Suma cyfr jest już dana, więc inny warunek
+                      warunek = liczba - (jed*10 + dz); // Różnica między liczbą a liczbą z przestawionymi cyframi
+                      if (warunek === 0) return questionGenerators.find(g=>g.id === 'jn_liczbaDwucyfrowa').generator(); // Jeśli cyfry takie same
+                      opisWarunku = `Po przestawieniu cyfr otrzymamy liczbę ${warunek > 0 ? 'mniejszą' : 'większą'} o ${Math.abs(warunek)}.`;
+                      // W tym przypadku treść zadania musi być inna, np. oparta na tej różnicy
+                      // Ale dla uproszczenia, trzymajmy się prostszego warunku o różnicy cyfr
+                      // Generujmy ponownie, jeśli trafiliśmy na równość cyfr lub brak dobrego warunku
+                      return questionGenerators.find(g=>g.id === 'jn_liczbaDwucyfrowa').generator();
+                 }
+
+
+                 const question = `Suma cyfr pewnej liczby dwucyfrowej wynosi ${sumaCyfr}. ${opisWarunku} Znajdź tę liczbę.`;
+                 const answer = `${liczba}`;
+                 const explanation = `Niech d = cyfra dziesiątek, j = cyfra jedności.
+Liczba = 10d + j.
+Mamy układ równań:
+1) d + j = ${sumaCyfr}
+2) ${dz > jed ? 'd - j' : 'j - d'} = ${warunek}  (wynika z opisu warunku)
+
+Z równania (1) wyznaczamy np. d = ${sumaCyfr} - j.
+Podstawiamy do równania (2):
+${dz > jed ? `(${sumaCyfr} - j) - j = ${warunek}` : `j - (${sumaCyfr} - j) = ${warunek}`}
+${dz > jed ? `${sumaCyfr} - 2j = ${warunek} => -2j = ${warunek - sumaCyfr} => j = ${jed}` : `j - ${sumaCyfr} + j = ${warunek} => 2j = ${warunek + sumaCyfr} => j = ${jed}`}
+
+Znając j = ${jed}, obliczamy d z (1):
+d + ${jed} = ${sumaCyfr} => d = ${sumaCyfr - jed} = ${dz}.
+Szukana liczba to 10d + j = 10 * ${dz} + ${jed} = ${liczba}.`;
+                 return { question, answer, explanation };
+            }
+        },
+        // Typ 7: Zakupy (cena za sztukę, łączny koszt)
+        {
+            topic: 'jednaNiewiadoma', topicName: 'Jedna niewiadoma', id: 'jn_zakupy',
+            generator: () => {
+                const cena1 = getRandomInt(2, 7); // cena zeszytu
+                const cena2 = getRandomInt(1, 4); // cena ołówka
+                const ilosc1 = getRandomInt(3, 8);
+                const ilosc2 = getRandomInt(2, 10);
+                const lacznyKoszt = ilosc1 * cena1 + ilosc2 * cena2;
+                // W zadaniu ukryjemy jedną z cen
+                const question = `Kasia kupiła ${ilosc1} zeszytów i ${ilosc2} ołówków. Zapłaciła łącznie ${lacznyKoszt} zł. Jeden ołówek kosztował ${cena2} zł. Ile kosztował jeden zeszyt?`;
+                const answer = `${cena1} zł`;
+                const explanation = `Niech x = cena jednego zeszytu (w zł).
+Koszt zeszytów = (ilość zeszytów) * (cena zeszytu) = ${ilosc1} * x
+Koszt ołówków = (ilość ołówków) * (cena ołówka) = ${ilosc2} * ${cena2} zł = ${ilosc2 * cena2} zł
+Łączny koszt = Koszt zeszytów + Koszt ołówków
+${lacznyKoszt} zł = ${ilosc1}x + ${ilosc2 * cena2} zł
+${lacznyKoszt} - ${ilosc2 * cena2} = ${ilosc1}x
+${lacznyKoszt - ilosc2 * cena2} = ${ilosc1}x
+x = ${lacznyKoszt - ilosc2 * cena2} / ${ilosc1}
+x = ${cena1} zł`;
+                return { question, answer, explanation };
+            }
+        },
+
+        // === Kategoria: Proporcje ===
+        // Typ 8: Skala mapy (obliczanie skali)
+        {
+            topic: 'proporcje', topicName: 'Proporcje', id: 'prop_obliczSkale',
+            generator: () => {
+                const realDistKm = getRandomInt(10, 100);
+                const realDistCm = realDistKm * 100000;
+                const distOnMapCm = getRandomFloat(2, 20, 1);
+                const scaleDenominator = Math.round(realDistCm / distOnMapCm);
+                // Zaokrąglijmy skalę do "ładnej" liczby
+                const niceScaleDenominator = Math.round(scaleDenominator / 1000) * 1000;
+                 if (niceScaleDenominator == 0) return questionGenerators.find(g=>g.id === 'prop_obliczSkale').generator();
+                 // Przeliczmy dystans na mapie dla ładnej skali
+                 const niceDistOnMap = round(realDistCm / niceScaleDenominator, 1);
+
+                const question = `Rzeczywista odległość między dwoma punktami wynosi ${realDistKm} km. Na mapie ta odległość odpowiada odcinkowi o długości ${niceDistOnMap.toString().replace('.',',')} cm. W jakiej skali wykonana jest ta mapa?`;
+                const answer = `1:${niceScaleDenominator.toLocaleString('pl-PL')}`;
+                const explanation = `Skala mapy to stosunek odległości na mapie do odpowiadającej jej odległości w terenie, wyrażony w tych samych jednostkach.
+Odległość na mapie = ${niceDistOnMap.toString().replace('.',',')} cm
+Odległość w terenie = ${realDistKm} km
+
+Zamieniamy odległość w terenie na centymetry:
+${realDistKm} km = ${realDistKm * 1000} m = ${realDistKm * 1000 * 100} cm = ${realDistCm.toLocaleString('pl-PL')} cm
+
+Skala = (Odległość na mapie) : (Odległość w terenie)
+Skala = ${niceDistOnMap.toString().replace('.',',')} cm : ${realDistCm.toLocaleString('pl-PL')} cm
+
+Aby uzyskać skalę w postaci 1:x, dzielimy obie strony przez ${niceDistOnMap}:
+Skala = (${niceDistOnMap}/${niceDistOnMap}) : (${realDistCm}/${niceDistOnMap})
+Skala = 1 : ${Math.round(realDistCm / niceDistOnMap)}
+Skala = 1:${niceScaleDenominator.toLocaleString('pl-PL')}`; // Używamy zaokrąglonej
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 9: Przeliczanie walut
+        {
+            topic: 'proporcje', topicName: 'Proporcje', id: 'prop_waluty',
+            generator: () => {
+                const rate = getRandomFloat(4.10, 4.80, 2); // kurs np. EUR/PLN
+                const amountEUR = getRandomInt(20, 500);
+                const amountPLN = round(amountEUR * rate, 2);
+                const question = `Kantor oferuje kurs wymiany euro na złotówki wynoszący ${rate.toString().replace('.',',')} PLN za 1 EUR. Ile złotych otrzyma klient, wymieniając ${amountEUR} EUR?`;
+                const answer = `${amountPLN.toString().replace('.',',')} zł`;
+                const explanation = `Mamy proporcję:
+1 EUR   ---   ${rate.toString().replace('.',',')} PLN
+${amountEUR} EUR   ---   x PLN
+
+Mnożymy na krzyż:
+1 * x = ${amountEUR} * ${rate}
+x = ${amountPLN.toString().replace('.',',')} PLN`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 10: Podobne prostokąty
+        {
+             topic: 'proporcje', topicName: 'Proporcje', id: 'prop_podobneProstokaty',
+             generator: () => {
+                 const a1 = getRandomInt(4, 10);
+                 const b1 = getRandomInt(a1 + 1, 15);
+                 const k = getRandomFloat(1.5, 3.0, 1); // Skala podobieństwa > 1
+                 const a2 = round(a1 * k, 1);
+                 const b2 = round(b1 * k, 1);
+                 // W zadaniu podajemy 3 boki
+                 const question = `Prostokąt P1 ma boki długości ${a1} cm i ${b1} cm. Prostokąt P2 jest podobny do P1, a jego krótszy bok ma długość ${a2.toString().replace('.',',')} cm. Oblicz długość dłuższego boku prostokąta P2.`;
+                 const answer = `${b2.toString().replace('.',',')} cm`;
+                 const explanation = `Prostokąty podobne mają ten sam stosunek odpowiednich boków (jest to skala podobieństwa k).
+Stosunek krótszych boków = Stosunek dłuższych boków = k
+
+Krótszy bok P1 = ${a1} cm
+Dłuższy bok P1 = ${b1} cm
+Krótszy bok P2 = ${a2.toString().replace('.',',')} cm
+Dłuższy bok P2 = x cm
+
+Układamy proporcję stosunku odpowiednich boków:
+(Krótszy bok P2) / (Krótszy bok P1) = (Dłuższy bok P2) / (Dłuższy bok P1)
+${a2.toString().replace('.',',')} / ${a1} = x / ${b1}
+
+Możemy najpierw obliczyć skalę podobieństwa k:
+k = (Krótszy bok P2) / (Krótszy bok P1) = ${a2.toString().replace('.',',')} / ${a1} = ${k}
+
+Teraz używamy skali do znalezienia dłuższego boku P2:
+Dłuższy bok P2 = k * (Dłuższy bok P1)
+x = ${k} * ${b1} = ${b2.toString().replace('.',',')} cm`;
+                 return { question, answer, explanation };
+             }
+        },
+        // Typ 11: Cień (podobne trójkąty)
+        {
+            topic: 'proporcje', topicName: 'Proporcje', id: 'prop_cien',
+            generator: () => {
+                const h1 = getRandomFloat(1.5, 2.0, 1); // wzrost człowieka
+                const s1 = getRandomFloat(0.8, 3.0, 1); // cień człowieka
+                const h2 = getRandomFloat(5, 25, 1); // wysokość drzewa/budynku
+                const s2 = round((h2 * s1) / h1, 1); // cień drzewa/budynku
+
+                const question = `W słoneczny dzień osoba o wzroście ${h1.toString().replace('.',',')} m rzuca cień o długości ${s1.toString().replace('.',',')} m. W tym samym czasie pobliskie drzewo rzuca cień o długości ${s2.toString().replace('.',',')} m. Jaka jest wysokość drzewa?`;
+                const answer = `${h2.toString().replace('.',',')} m`;
+                const explanation = `Promienie słoneczne padają równolegle, tworząc podobne trójkąty prostokątne (obiekt-cień).
+Stosunek wysokości obiektu do długości jego cienia jest stały.
+
+(Wysokość osoby) / (Cień osoby) = (Wysokość drzewa) / (Cień drzewa)
+Niech x = wysokość drzewa.
+${h1.toString().replace('.',',')} / ${s1.toString().replace('.',',')} = x / ${s2.toString().replace('.',',')}
+
+Mnożymy na krzyż:
+${s1} * x = ${h1} * ${s2}
+x = (${h1} * ${s2}) / ${s1}
+x = ${h2.toString().replace('.',',')} m`;
+                return { question, answer, explanation };
+            }
+        },
+         // Typ 12: Proporcjonalność odwrotna (zapasy żywności)
+         {
+             topic: 'proporcje', topicName: 'Proporcje', id: 'prop_zapasy',
+             generator: () => {
+                 const n1 = getRandomInt(5, 15); // początkowa liczba osób/zwierząt
+                 const d1 = getRandomInt(10, 30); // na ile dni starczy zapasów
+                 let n2;
+                 do {
+                     n2 = n1 + getRandomInt(-Math.floor(n1/2), 10); // nowa liczba osób/zwierząt
+                 } while (n2 <= 0 || n2 === n1);
+                 const d2 = round((n1 * d1) / n2, 1); // na ile dni starczy dla n2
+
+                 const noun = Math.random() < 0.5 ? "osób" : "koni";
+                 const noun_dopelniacz = noun === "osób" ? "osobom" : "koniom";
+
+                 const question = `Zapasy żywności w schronisku wystarczą dla ${n1} ${noun} na ${d1} dni. Na ile dni wystarczą te same zapasy, jeśli liczba ${noun} ${n2 > n1 ? `zwiększy się do ${n2}` : `zmniejszy się do ${n2}`}?`;
+                 const answer = `${d2.toString().replace('.',',')} dni`;
+                 const explanation = `Jest to proporcjonalność odwrotna: im więcej ${noun}, tym na krócej starczą zapasy (przy stałej ilości zapasów).
+Całkowita ilość "osobodni" (lub "koniodni") żywności jest stała.
+Całkowite zapasy = (liczba ${noun} 1) * (liczba dni 1) = ${n1} * ${d1} = ${n1 * d1} "osobodni".
+
+Dla ${n2} ${noun}, czas (x), na który wystarczą zapasy:
+(liczba ${noun} 2) * (liczba dni 2) = Całkowite zapasy
+${n2} * x = ${n1 * d1}
+x = ${n1 * d1} / ${n2}
+x = ${d2.toString().replace('.',',')} dni`;
+                 return { question, answer, explanation };
+             }
+         },
+         // Typ 13: Gęstość
+         {
+             topic: 'proporcje', topicName: 'Proporcje', id: 'prop_gestosc',
+             generator: () => {
+                 const density = getRandomFloat(0.7, 19.3, 1); // g/cm3 (woda=1, alu=2.7, zloto=19.3)
+                 const volume = getRandomInt(10, 500); // cm3
+                 const mass = round(density * volume, 1);
+                 const material = density > 15 ? "złota" : (density > 2.5 ? "aluminium" : "drewna");
+
+                 // Losowo pytaj o masę lub objętość
+                 if (Math.random() < 0.5) {
+                     // Pytaj o masę
+                    const question = `Gęstość ${material} wynosi ${density.toString().replace('.',',')} g/cm³. Jaką masę ma sztabka ${material} o objętości ${volume} cm³?`;
+                    const answer = `${mass.toString().replace('.',',')} g`;
+                    const explanation = `Gęstość (d) = Masa (m) / Objętość (V)
+Dane:
+d = ${density.toString().replace('.',',')} g/cm³
+V = ${volume} cm³
+Szukane: m
+
+Przekształcamy wzór: m = d * V
+m = ${density.toString().replace('.',',')} g/cm³ * ${volume} cm³
+m = ${mass.toString().replace('.',',')} g`;
+                     return { question, answer, explanation };
+                 } else {
+                     // Pytaj o objętość
+                     const question = `Gęstość ${material} wynosi ${density.toString().replace('.',',')} g/cm³. Jaką objętość zajmuje kawałek ${material} o masie ${mass.toString().replace('.',',')} g?`;
+                     const answer = `${volume.toString().replace('.',',')} cm3`;
+                     const explanation = `Gęstość (d) = Masa (m) / Objętość (V)
+Dane:
+d = ${density.toString().replace('.',',')} g/cm³
+m = ${mass.toString().replace('.',',')} g
+Szukane: V
+
+Przekształcamy wzór: V = m / d
+V = ${mass.toString().replace('.',',')} g / ${density.toString().replace('.',',')} g/cm³
+V = ${volume.toString().replace('.',',')} cm³`;
+                     return { question, answer, explanation };
+                 }
+             }
+         },
+
+        // === Kategoria: Geometria ===
+        // Typ 14: Pole rombu (z przekątnych)
+        {
+             topic: 'geometria', topicName: 'Geometria', id: 'geo_poleRombuPrzekatne',
+             generator: () => {
+                 const d1 = getRandomInt(5, 20);
+                 const d2 = getRandomInt(5, 20);
+                 const pole = (d1 * d2) / 2;
+                 const question = `Przekątne rombu mają długości ${d1} cm i ${d2} cm. Oblicz pole tego rombu.`;
+                 const answer = `${pole} cm2`;
+                 const explanation = `Pole rombu (P) można obliczyć ze wzoru wykorzystującego długości jego przekątnych (d1, d2):
+P = (d1 * d2) / 2
+Dane:
+d1 = ${d1} cm
+d2 = ${d2} cm
+P = (${d1} cm * ${d2} cm) / 2
+P = ${d1 * d2} / 2 cm²
+P = ${pole} cm²`;
+                 return { question, answer, explanation };
+             }
+        },
+        // Typ 15: Twierdzenie Pitagorasa (przeciwprostokątna)
+        {
+             topic: 'geometria', topicName: 'Geometria', id: 'geo_pitagorasPrzeciw',
+             generator: () => {
+                 const a = getRandomInt(3, 20);
+                 const b = getRandomInt(3, 20);
+                 const cSquared = a*a + b*b;
+                 const c = round(Math.sqrt(cSquared), 2); // Może być niewymierna
+                 const question = `Przyprostokątne trójkąta prostokątnego mają długości ${a} i ${b}. Oblicz długość przeciwprostokątnej.`;
+                 const answer = `${c}`; // Odpowiedź bez jednostki, bo może być pierwiastek
+                 const explanation = `Zgodnie z twierdzeniem Pitagorasa w trójkącie prostokątnym:
+a² + b² = c²
+gdzie a, b to długości przyprostokątnych, a c to długość przeciwprostokątnej.
+Dane:
+a = ${a}
+b = ${b}
+a² = ${a*a}
+b² = ${b*b}
+c² = a² + b² = ${a*a} + ${b*b} = ${cSquared}
+c = √(${cSquared})
+c ≈ ${c.toString().replace('.',',')}
+(Jeśli ${cSquared} jest kwadratem liczby całkowitej, np. 25, to c = 5. W przeciwnym razie wynik jest pierwiastkiem, np. √${cSquared} lub jego przybliżeniem ${c.toString().replace('.',',')}).`;
+                 return { question, answer, explanation };
+             }
+        },
+        // Typ 16: Twierdzenie Pitagorasa (przyprostokątna)
+        {
+             topic: 'geometria', topicName: 'Geometria', id: 'geo_pitagorasPrzy',
+             generator: () => {
+                 const a = getRandomInt(3, 20); // Jedna przyprostokątna
+                 const c = getRandomInt(a + 1, a + 15); // Przeciwprostokątna (musi być > a)
+                 const bSquared = c*c - a*a;
+                  if (bSquared <=0) return questionGenerators.find(g=>g.id === 'geo_pitagorasPrzy').generator(); // Sanity check
+                 const b = round(Math.sqrt(bSquared), 2);
+                 const question = `W trójkącie prostokątnym jedna z przyprostokątnych ma długość ${a}, a przeciwprostokątna ma długość ${c}. Oblicz długość drugiej przyprostokątnej.`;
+                 const answer = `${b}`;
+                 const explanation = `Zgodnie z twierdzeniem Pitagorasa: a² + b² = c²
+Dane:
+a = ${a}
+c = ${c}
+Szukane: b
+a² = ${a*a}
+c² = ${c*c}
+Podstawiamy do wzoru:
+${a*a} + b² = ${c*c}
+b² = c² - a²
+b² = ${c*c} - ${a*a} = ${bSquared}
+b = √(${bSquared})
+b ≈ ${b.toString().replace('.',',')}
+(Podobnie jak poprzednio, wynik może być pierwiastkiem lub jego przybliżeniem).`;
+                 return { question, answer, explanation };
+             }
+        },
+        // Typ 17: Kąty w trójkącie (zależności)
+        {
+             topic: 'geometria', topicName: 'Geometria', id: 'geo_katyTrojkatZaleznosc',
+             generator: () => {
+                 let alpha, beta, gamma;
+                 do {
+                     alpha = getRandomInt(20, 100);
+                     let diff1 = getRandomInt(5, 30);
+                     let type = Math.random();
+                     if (type < 0.33) { // beta = alpha + diff1
+                        beta = alpha + diff1;
+                        gamma = 180 - alpha - beta;
+                     } else if (type < 0.66) { // beta = alpha - diff1
+                        beta = alpha - diff1;
+                        gamma = 180 - alpha - beta;
+                     } else { // beta = N * alpha (N=2 or 3)
+                         let mult = getRandomInt(2,3);
+                         beta = mult * alpha;
+                         gamma = 180 - alpha - beta;
+                     }
+                 } while (alpha <= 0 || beta <= 0 || gamma <= 0); // Ensure all angles are positive
+
+                 // Sformułuj pytanie na podstawie użytej zależności
+                 let depDesc;
+                 if(Math.abs(beta - alpha) < 31 && Math.abs(beta - alpha) > 4) { // Użyto różnicy
+                    let diff = Math.abs(beta-alpha);
+                    depDesc = `jeden z pozostałych kątów jest o ${diff}° ${beta > alpha ? 'większy' : 'mniejszy'} od niego`;
+                 } else if (beta / alpha >= 1.9 && beta/alpha <= 3.1) { // Użyto mnożnika
+                    let mult = Math.round(beta/alpha);
+                    depDesc = `jeden z pozostałych kątów jest ${mult} razy większy od niego`;
+                 } else { // Jeśli żadna z powyższych nie pasuje idealnie, użyj prostszej zależności
+                    let diff = Math.abs(gamma - alpha);
+                     if(diff < 5 || diff > 50) diff = getRandomInt(5,30); // Jesli gamma = alpha, wylosuj inna zaleznosc
+                     beta = 180 - alpha - (alpha + diff); // Przelicz beta i gamma dla nowej zależności
+                     gamma = alpha + diff;
+                     if (beta <= 0 || gamma <=0) return questionGenerators.find(g=>g.id === 'geo_katyTrojkatZaleznosc').generator(); // retry
+                    depDesc = `a trzeci kąt jest o ${diff}° większy od pierwszego`;
+                 }
+
+
+                 const question = `W pewnym trójkącie jeden z kątów ma miarę ${alpha}°, a ${depDesc}. Oblicz miary pozostałych kątów tego trójkąta.`;
+                 const answer = `${beta}, ${gamma}`; // Kolejność nieistotna przy sprawdzaniu
+                 const explanation = `Suma miar kątów w trójkącie wynosi 180°.
+Niech kąty mają miary α, β, γ.
+Dane: α = ${alpha}°
+Warunek: ${depDesc}.
+
+Rozpatrujemy warunek:
+${explanationBasedOnDepDesc(alpha, beta, gamma, depDesc)}
+
+Obliczamy trzeci kąt (jeśli jeszcze nie obliczony):
+γ = 180° - α - β = 180° - ${alpha}° - ${beta}° = ${gamma}°
+
+Miary kątów to ${alpha}°, ${beta}°, ${gamma}°.
+Pozostałe kąty: ${beta}° i ${gamma}°.`;
+                 return { question, answer, explanation };
+             }
+        },
+         // Typ 18: Pole koła (z promienia/średnicy)
+        {
+             topic: 'geometria', topicName: 'Geometria', id: 'geo_poleKola',
+             generator: () => {
+                 const r = getRandomInt(2, 15);
+                 const d = 2 * r;
+                 const pole = round(Math.PI * r * r, 2);
+                 const polePi = `${r*r}π`; // Odpowiedź z pi
+
+                 if (Math.random() < 0.5) { // Pytanie o promieniu
+                    const question = `Oblicz pole koła o promieniu ${r} cm. Wynik podaj z dokładnością do dwóch miejsc po przecinku (przyjmij π ≈ 3,14) lub w postaci z π.`;
+                    const answer = `${polePi} cm2`; // Preferowana odpowiedź z Pi
+                    const explanation = `Pole koła (P) obliczamy ze wzoru: P = πr²
+gdzie r to promień koła.
+Dane: r = ${r} cm
+P = π * (${r} cm)²
+P = π * ${r*r} cm²
+P = ${r*r}π cm²
+
+Przybliżona wartość (przyjmując π ≈ 3,14):
+P ≈ 3,14 * ${r*r} cm²
+P ≈ ${round(3.14 * r * r, 2)} cm²`;
+                    return { question, answer, explanation, acceptedAnswers: [answer, `${round(3.14 * r * r, 2)} cm2`] }; // Akceptuj obie formy
+                 } else { // Pytanie o średnicy
+                     const question = `Oblicz pole koła o średnicy ${d} cm. Wynik podaj z dokładnością do dwóch miejsc po przecinku (przyjmij π ≈ 3,14) lub w postaci z π.`;
+                     const answer = `${polePi} cm2`;
+                     const explanation = `Pole koła (P) obliczamy ze wzoru: P = πr²
+gdzie r to promień koła.
+Średnica (d) = 2 * promień (r).
+Dane: d = ${d} cm
+Najpierw obliczamy promień: r = d / 2 = ${d} cm / 2 = ${r} cm.
+Teraz obliczamy pole:
+P = π * (${r} cm)²
+P = π * ${r*r} cm²
+P = ${r*r}π cm²
+
+Przybliżona wartość (przyjmując π ≈ 3,14):
+P ≈ 3,14 * ${r*r} cm²
+P ≈ ${round(3.14 * r * r, 2)} cm²`;
+                     return { question, answer, explanation, acceptedAnswers: [answer, `${round(3.14 * r * r, 2)} cm2`] };
+                 }
+             }
+        },
+        // Typ 19: Objętość sześcianu/prostopadłościanu
+        {
+            topic: 'geometria', topicName: 'Geometria', id: 'geo_objetoscBryly',
+             generator: () => {
+                if (Math.random() < 0.5) { // Sześcian
+                    const a = getRandomInt(2, 10);
+                    const V = a * a * a;
+                    const question = `Oblicz objętość sześcianu o krawędzi ${a} cm.`;
+                    const answer = `${V} cm3`;
+                    const explanation = `Objętość sześcianu (V) o krawędzi 'a' obliczamy ze wzoru: V = a³
+Dane: a = ${a} cm
+V = (${a} cm)³ = ${a} cm * ${a} cm * ${a} cm = ${V} cm³`;
+                    return { question, answer, explanation };
+                } else { // Prostopadłościan
+                     const a = getRandomInt(2, 10);
+                     const b = getRandomInt(2, 10);
+                     const c = getRandomInt(2, 10);
+                     const V = a * b * c;
+                     const question = `Oblicz objętość prostopadłościanu o wymiarach podstawy ${a} cm x ${b} cm i wysokości ${c} cm.`;
+                     const answer = `${V} cm3`;
+                     const explanation = `Objętość prostopadłościanu (V) o krawędziach a, b, c obliczamy ze wzoru: V = a * b * c
+Dane: a = ${a} cm, b = ${b} cm, c = ${c} cm
+V = ${a} cm * ${b} cm * ${c} cm = ${V} cm³`;
+                    return { question, answer, explanation };
+                }
+            }
+        },
+
+        // === Kategoria: Droga, prędkość, czas ===
+        // Typ 20: Obliczanie czasu podróży
+        {
+            topic: 'dpc', topicName: 'Droga, prędkość, czas', id: 'dpc_obliczCzas',
+            generator: () => {
+                const distance = getRandomInt(50, 500); // km
+                const speed = getRandomInt(40, 120); // km/h
+                const timeHours = round(distance / speed, 2);
+                const totalMinutes = Math.round(timeHours * 60);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+
+                const question = `Samochód porusza się ze stałą średnią prędkością ${speed} km/h. Ile czasu zajmie mu pokonanie dystansu ${distance} km? Wynik podaj w godzinach i minutach.`;
+                const answer = `${hours} h ${minutes} min`; // Odpowiedź w formacie h min
+                 const explanation = `Dane:
+- Droga (s) = ${distance} km
+- Prędkość (V) = ${speed} km/h
+Szukany: Czas (t)
+
+Wzór: Czas = Droga / Prędkość
+t = s / V
+t = ${distance} km / ${speed} km/h
+t = ${timeHours.toString().replace('.',',')} h
+
+Zamieniamy czas na godziny i minuty:
+${timeHours.toString().replace('.',',')} h = ${hours} pełnych godzin i ${round(timeHours - hours, 2)} * 60 minut
+${round(timeHours - hours, 2)} * 60 minut ≈ ${minutes} minut.
+Całkowity czas: ${hours} godzin ${minutes} minut.`;
+                 // Akceptuj też odpowiedź w ułamku godziny
+                 return { question, answer, explanation, acceptedAnswers: [answer, `${timeHours.toString().replace('.',',')} h`] };
+             }
+        },
+        // Typ 21: Obliczanie prędkości średniej (z różnymi prędkościami)
+        {
+            topic: 'dpc', topicName: 'Droga, prędkość, czas', id: 'dpc_predkoscSredniaRozna',
+            generator: () => {
+                const d1 = getRandomInt(50, 150); // km
+                const v1 = getRandomInt(40, 70); // km/h
+                const d2 = getRandomInt(50, 150); // km
+                const v2 = getRandomInt(80, 120); // km/h
+
+                const t1 = d1 / v1;
+                const t2 = d2 / v2;
+                const totalDistance = d1 + d2;
+                const totalTime = t1 + t2;
+                const avgSpeed = round(totalDistance / totalTime, 1);
+
+                const question = `Kierowca przejechał pierwszy odcinek trasy o długości ${d1} km ze średnią prędkością ${v1} km/h, a drugi odcinek o długości ${d2} km ze średnią prędkością ${v2} km/h. Jaka była średnia prędkość kierowcy na całej trasie?`;
+                const answer = `${avgSpeed.toString().replace('.',',')} km/h`;
+                const explanation = `Prędkość średnia (Vśr) = Całkowita droga (Sc) / Całkowity czas (Tc)
+
+1. Obliczamy czas przejazdu pierwszego odcinka (t1):
+   t1 = Droga1 / Prędkość1 = ${d1} km / ${v1} km/h = ${round(t1, 2)} h
+
+2. Obliczamy czas przejazdu drugiego odcinka (t2):
+   t2 = Droga2 / Prędkość2 = ${d2} km / ${v2} km/h = ${round(t2, 2)} h
+
+3. Obliczamy całkowitą drogę (Sc):
+   Sc = Droga1 + Droga2 = ${d1} km + ${d2} km = ${totalDistance} km
+
+4. Obliczamy całkowity czas (Tc):
+   Tc = t1 + t2 = ${round(t1, 2)} h + ${round(t2, 2)} h = ${round(totalTime, 2)} h
+
+5. Obliczamy prędkość średnią (Vśr):
+   Vśr = Sc / Tc = ${totalDistance} km / ${round(totalTime, 2)} h ≈ ${avgSpeed.toString().replace('.',',')} km/h`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 22: Obliczanie prędkości średniej (z postojem)
+        {
+             topic: 'dpc', topicName: 'Droga, prędkość, czas', id: 'dpc_predkoscSredniaPostoj',
+             generator: () => {
+                 const distance = getRandomInt(100, 300); // km
+                 const speed = getRandomInt(60, 100); // km/h podczas jazdy
+                 const stopMinutes = getRandomInt(15, 60); // minuty postoju
+                 const stopHours = stopMinutes / 60;
+
+                 const drivingTime = distance / speed;
+                 const totalTime = drivingTime + stopHours;
+                 const avgSpeed = round(distance / totalTime, 1);
+
+                 const question = `Pociąg przebył trasę ${distance} km. Jechał ze średnią prędkością ${speed} km/h, ale miał ${stopMinutes}-minutowy postój na jednej ze stacji. Jaka była średnia prędkość pociągu na całej trasie (wliczając postój)?`;
+                 const answer = `${avgSpeed.toString().replace('.',',')} km/h`;
+                 const explanation = `Prędkość średnia (Vśr) = Całkowita droga (Sc) / Całkowity czas (Tc)
+
+1. Całkowita droga (Sc) = ${distance} km
+
+2. Obliczamy czas samej jazdy (Tj):
+   Tj = Droga / Prędkość podczas jazdy = ${distance} km / ${speed} km/h = ${round(drivingTime, 2)} h
+
+3. Obliczamy czas postoju (Tp):
+   Tp = ${stopMinutes} minut = ${stopMinutes} / 60 h = ${round(stopHours, 2)} h
+
+4. Obliczamy całkowity czas podróży (Tc):
+   Tc = Czas jazdy + Czas postoju = Tj + Tp = ${round(drivingTime, 2)} h + ${round(stopHours, 2)} h = ${round(totalTime, 2)} h
+
+5. Obliczamy prędkość średnią (Vśr):
+   Vśr = Sc / Tc = ${distance} km / ${round(totalTime, 2)} h ≈ ${avgSpeed.toString().replace('.',',')} km/h`;
+                 return { question, answer, explanation };
+             }
+        },
+        // Typ 23: Rzeka (prędkość z prądem/pod prąd - obliczanie prędkości własnej lub prądu)
+        {
+            topic: 'dpc', topicName: 'Droga, prędkość, czas', id: 'dpc_rzeka',
+            generator: () => {
+                const vWlasna = getRandomInt(8, 20); // Prędkość własna łódki
+                const vPradu = getRandomInt(1, 5);
+                const vZPradem = vWlasna + vPradu;
+                const vPodPrad = vWlasna - vPradu;
+                 if (vPodPrad <= 0) return questionGenerators.find(g=>g.id === 'dpc_rzeka').generator(); // Prędkość pod prąd musi być dodatnia
+
+                 // Losowo ukrywamy jedną z prędkości
+                 if (Math.random() < 0.33) { // Ukryj vWlasna
+                    const question = `Prędkość łódki płynącej z prądem rzeki wynosi ${vZPradem} km/h, a pod prąd ${vPodPrad} km/h. Oblicz prędkość własną łódki.`;
+                    const answer = `${vWlasna} km/h`;
+                    const explanation = `Niech Vw = prędkość własna łódki, Vp = prędkość prądu.
+Prędkość z prądem = Vw + Vp = ${vZPradem} km/h
+Prędkość pod prąd = Vw - Vp = ${vPodPrad} km/h
+Dodając oba równania stronami:
+(Vw + Vp) + (Vw - Vp) = ${vZPradem} + ${vPodPrad}
+2Vw = ${vZPradem + vPodPrad}
+Vw = (${vZPradem + vPodPrad}) / 2 = ${vWlasna} km/h`;
+                     return { question, answer, explanation };
+                 } else if (Math.random() < 0.66) { // Ukryj vPradu
+                     const question = `Prędkość łódki płynącej z prądem rzeki wynosi ${vZPradem} km/h, a pod prąd ${vPodPrad} km/h. Oblicz prędkość prądu rzeki.`;
+                     const answer = `${vPradu} km/h`;
+                     const explanation = `Niech Vw = prędkość własna łódki, Vp = prędkość prądu.
+Prędkość z prądem = Vw + Vp = ${vZPradem} km/h
+Prędkość pod prąd = Vw - Vp = ${vPodPrad} km/h
+Odejmując drugie równanie od pierwszego stronami:
+(Vw + Vp) - (Vw - Vp) = ${vZPradem} - ${vPodPrad}
+Vw + Vp - Vw + Vp = ${vZPradem - vPodPrad}
+2Vp = ${vZPradem - vPodPrad}
+Vp = (${vZPradem - vPodPrad}) / 2 = ${vPradu} km/h`;
+                     return { question, answer, explanation };
+                 } else { // Podaj vWlasna i vPradu, pytaj o z/pod prąd
+                     const type = Math.random() < 0.5 ? 'z prądem' : 'pod prąd';
+                     const vResult = type === 'z prądem' ? vZPradem : vPodPrad;
+                     const question = `Prędkość własna motorówki wynosi ${vWlasna} km/h, a prędkość prądu rzeki ${vPradu} km/h. Z jaką prędkością będzie płynąć motorówka ${type}?`;
+                     const answer = `${vResult} km/h`;
+                     const explanation = `Prędkość ${type} = Prędkość własna ${type === 'z prądem' ? '+' : '-'} Prędkość prądu
+Prędkość ${type} = ${vWlasna} km/h ${type === 'z prądem' ? '+' : '-'} ${vPradu} km/h = ${vResult} km/h`;
+                     return { question, answer, explanation };
+                 }
+            }
+        },
+         // Typ 24: Przeliczanie jednostek prędkości
+         {
+             topic: 'dpc', topicName: 'Droga, prędkość, czas', id: 'dpc_jednostki',
+             generator: () => {
+                 const speed_kmh = getRandomInt(10, 120);
+                 const speed_ms = round(speed_kmh * 1000 / 3600, 1);
+
+                 if (Math.random() < 0.5) { // km/h na m/s
+                    const question = `Samochód jedzie z prędkością ${speed_kmh} km/h. Wyraź tę prędkość w metrach na sekundę (m/s).`;
+                    const answer = `${speed_ms.toString().replace('.',',')} m/s`;
+                    const explanation = `Aby zamienić km/h na m/s, mnożymy przez 1000 (zamiana km na m) i dzielimy przez 3600 (zamiana h na s).
+${speed_kmh} km/h = ${speed_kmh} * (1000 m / 3600 s)
+= ${speed_kmh} * (10 / 36) m/s
+= ${speed_kmh} * (5 / 18) m/s
+≈ ${speed_ms.toString().replace('.',',')} m/s`;
+                     return { question, answer, explanation };
+                 } else { // m/s na km/h
+                    const speed_ms_input = getRandomInt(5, 30);
+                    const speed_kmh_output = round(speed_ms_input * 3600 / 1000, 1);
+                    const question = `Sprinter biegnie z prędkością ${speed_ms_input} m/s. Wyraź tę prędkość w kilometrach na godzinę (km/h).`;
+                    const answer = `${speed_kmh_output.toString().replace('.',',')} km/h`;
+                    const explanation = `Aby zamienić m/s na km/h, mnożymy przez 3600 (zamiana s na h) i dzielimy przez 1000 (zamiana m na km). Jest to równoważne mnożeniu przez 3,6.
+${speed_ms_input} m/s = ${speed_ms_input} * (3600 / 1000) km/h
+= ${speed_ms_input} * 3.6 km/h
+= ${speed_kmh_output.toString().replace('.',',')} km/h`;
+                     return { question, answer, explanation };
+                 }
+             }
+         },
+
+        // === Kategoria: Procenty, obniżki i podwyżki ===
+        // Typ 25: Obliczanie procentu liczby
+        {
+            topic: 'procenty', topicName: 'Procenty, obniżki, podwyżki', id: 'proc_procentZliczby',
+             generator: () => {
+                 const percent = getRandomInt(1, 99);
+                 const number = getRandomInt(50, 1000);
+                 const result = round((percent / 100) * number, 2);
+                 const question = `Oblicz ${percent}% liczby ${number}.`;
+                 const answer = `${result.toString().replace('.',',')}`;
+                 const explanation = `${percent}% to ułamek ${percent}/100 = ${percent/100}.
+Aby obliczyć ${percent}% liczby ${number}, mnożymy tę liczbę przez ułamek odpowiadający procentowi:
+${percent/100} * ${number} = ${result.toString().replace('.',',')}`;
+                 return { question, answer, explanation };
+            }
+        },
+        // Typ 26: Jakim procentem jednej liczby jest druga
+        {
+            topic: 'procenty', topicName: 'Procenty, obniżki, podwyżki', id: 'proc_jakimProcentem',
+            generator: () => {
+                const part = getRandomInt(10, 100);
+                const whole = getRandomInt(part + 1, 200);
+                const percent = round((part / whole) * 100, 1);
+                const question = `Jakim procentem liczby ${whole} jest liczba ${part}? Wynik zaokrąglij do jednego miejsca po przecinku, jeśli to konieczne.`;
+                const answer = `${percent.toString().replace('.',',')}%`;
+                const explanation = `Aby obliczyć, jakim procentem liczby A jest liczba B, obliczamy stosunek B/A, a następnie mnożymy go przez 100%.
+Szukany procent = (liczba B / liczba A) * 100%
+Procent = (${part} / ${whole}) * 100%
+Procent = ${round(part/whole, 3)} * 100%
+Procent = ${percent.toString().replace('.',',')}%`;
+                return { question, answer, explanation };
+            }
+        },
+        // Typ 27: Podwyżka/Obniżka o dany procent (obliczanie nowej wartości)
+        {
+            topic: 'procenty', topicName: 'Procenty, obniżki, podwyżki', id: 'proc_zmianaOProcent',
+            generator: () => {
+                 const initialValue = getRandomInt(50, 500);
+                 const percentChange = getRandomInt(5, 40);
+                 if (Math.random() < 0.5) { // Podwyżka
+                     const newValue = round(initialValue * (1 + percentChange / 100), 2);
+                     const question = `Cenę ${initialValue} zł podwyższono o ${percentChange}%. Jaka jest nowa cena?`;
+                     const answer = `${newValue.toString().replace('.',',')} zł`;
+                     const explanation = `Podwyżka wynosi ${percentChange}% ceny początkowej.
+Kwota podwyżki = ${percentChange}% z ${initialValue} zł = (${percentChange}/100) * ${initialValue} zł = ${round(initialValue * percentChange / 100, 2)} zł.
+Nowa cena = Cena początkowa + Kwota podwyżki
+Nowa cena = ${initialValue} zł + ${round(initialValue * percentChange / 100, 2)} zł = ${newValue.toString().replace('.',',')} zł.
+Alternatywnie: Nowa cena stanowi 100% + ${percentChange}% = ${100 + percentChange}% ceny początkowej.
+Nowa cena = ${100 + percentChange}% * ${initialValue} zł = ${ (100 + percentChange) / 100 } * ${initialValue} zł = ${newValue.toString().replace('.',',')} zł.`;
+                     return { question, answer, explanation };
+                 } else { // Obniżka
+                     const newValue = round(initialValue * (1 - percentChange / 100), 2);
+                     const question = `Cenę ${initialValue} zł obniżono o ${percentChange}%. Jaka jest nowa cena?`;
+                     const answer = `${newValue.toString().replace('.',',')} zł`;
+                     const explanation = `Obniżka wynosi ${percentChange}% ceny początkowej.
+Kwota obniżki = ${percentChange}% z ${initialValue} zł = (${percentChange}/100) * ${initialValue} zł = ${round(initialValue * percentChange / 100, 2)} zł.
+Nowa cena = Cena początkowa - Kwota obniżki
+Nowa cena = ${initialValue} zł - ${round(initialValue * percentChange / 100, 2)} zł = ${newValue.toString().replace('.',',')} zł.
+Alternatywnie: Nowa cena stanowi 100% - ${percentChange}% = ${100 - percentChange}% ceny początkowej.
+Nowa cena = ${100 - percentChange}% * ${initialValue} zł = ${ (100 - percentChange) / 100 } * ${initialValue} zł = ${newValue.toString().replace('.',',')} zł.`;
+                     return { question, answer, explanation };
+                 }
+            }
+        },
+         // Typ 28: Podatek VAT
+         {
+             topic: 'procenty', topicName: 'Procenty, obniżki, podwyżki', id: 'proc_vat',
+             generator: () => {
+                 const netPrice = getRandomInt(50, 1000);
+                 const vatRate = [5, 8, 23][getRandomInt(0, 2)]; // Losowa stawka VAT
+                 const vatAmount = round(netPrice * (vatRate / 100), 2);
+                 const grossPrice = round(netPrice + vatAmount, 2);
+
+                 if (Math.random() < 0.5) { // Oblicz brutto z netto
+                    const question = `Cena netto towaru wynosi ${netPrice.toString().replace('.',',')} zł. Stawka podatku VAT na ten towar to ${vatRate}%. Oblicz cenę brutto tego towaru.`;
+                    const answer = `${grossPrice.toString().replace('.',',')} zł`;
+                    const explanation = `Cena brutto = Cena netto + Podatek VAT
+Podatek VAT = Stawka VAT * Cena netto
+Podatek VAT = ${vatRate}% * ${netPrice.toString().replace('.',',')} zł = (${vatRate}/100) * ${netPrice.toString().replace('.',',')} zł = ${vatAmount.toString().replace('.',',')} zł
+Cena brutto = ${netPrice.toString().replace('.',',')} zł + ${vatAmount.toString().replace('.',',')} zł = ${grossPrice.toString().replace('.',',')} zł
+Alternatywnie: Cena brutto = Cena netto * (1 + Stawka VAT / 100)
+Cena brutto = ${netPrice.toString().replace('.',',')} zł * (1 + ${vatRate}/100) = ${netPrice.toString().replace('.',',')} zł * ${1 + vatRate/100} = ${grossPrice.toString().replace('.',',')} zł`;
+                    return { question, answer, explanation };
+                 } else { // Oblicz netto z brutto
+                    const question = `Cena brutto towaru (z ${vatRate}% VAT) wynosi ${grossPrice.toString().replace('.',',')} zł. Oblicz cenę netto tego towaru.`;
+                    const answer = `${netPrice.toString().replace('.',',')} zł`;
+                    const explanation = `Cena brutto = Cena netto * (1 + Stawka VAT / 100)
+${grossPrice.toString().replace('.',',')} zł = Cena netto * (1 + ${vatRate}/100)
+${grossPrice.toString().replace('.',',')} zł = Cena netto * ${1 + vatRate/100}
+Cena netto = ${grossPrice.toString().replace('.',',')} zł / ${1 + vatRate/100}
+Cena netto = ${netPrice.toString().replace('.',',')} zł`;
+                    return { question, answer, explanation };
+                 }
+             }
+         },
+         // Typ 29: Prosty procent składany (np. lokata na 2 lata) - UWAGA: Egzamin ósmoklasisty zwykle skupia się na procencie prostym, ale to może być zadanie "na plus"
+         {
+             topic: 'procenty', topicName: 'Procenty, obniżki, podwyżki', id: 'proc_procentSkladanyProsty',
+             generator: () => {
+                 const initialAmount = getRandomInt(1000, 5000);
+                 const annualRate = getRandomInt(3, 8); // Roczna stopa procentowa
+                 const years = 2; // Tylko 2 lata dla uproszczenia
+
+                 const amountAfter1Year = round(initialAmount * (1 + annualRate / 100), 2);
+                 const amountAfter2Years = round(amountAfter1Year * (1 + annualRate / 100), 2);
+                 // Uwzględnienie podatku Belki (19%) - typowe w kontekście lokat
+                 const interestYear1 = round(initialAmount * (annualRate / 100), 2);
+                 const taxYear1 = round(interestYear1 * 0.19, 2);
+                 const netInterestYear1 = interestYear1 - taxYear1;
+                 const capitalYear1End = initialAmount + netInterestYear1;
+
+                 const interestYear2 = round(capitalYear1End * (annualRate / 100), 2);
+                 const taxYear2 = round(interestYear2 * 0.19, 2);
+                 const netInterestYear2 = interestYear2 - taxYear2;
+                 const finalAmountWithTax = round(capitalYear1End + netInterestYear2, 2);
+
+
+                 const question = `Pan Jan wpłacił ${initialAmount} zł na dwuletnią lokatę bankową z oprocentowaniem ${annualRate}% w skali roku i roczną kapitalizacją odsetek. Od naliczonych odsetek pobierany jest podatek w wysokości 19%. Jaką kwotę Pan Jan będzie miał na koncie po ${years} latach?`;
+                 const answer = `${finalAmountWithTax.toString().replace('.',',')} zł`;
+                 const explanation = `Kwota początkowa (K0) = ${initialAmount} zł
+Oprocentowanie roczne (r) = ${annualRate}% = ${annualRate/100}
+Liczba lat = ${years}
+Podatek od odsetek = 19% = 0.19
+
+Rok 1:
+Odsetki naliczone = K0 * r = ${initialAmount} * ${annualRate/100} = ${interestYear1} zł
+Podatek = 19% * ${interestYear1} = 0.19 * ${interestYear1} = ${taxYear1} zł
+Odsetki netto = ${interestYear1} - ${taxYear1} = ${netInterestYear1} zł
+Kapitał na koniec roku 1 (K1) = K0 + Odsetki netto = ${initialAmount} + ${netInterestYear1} = ${capitalYear1End} zł
+
+Rok 2:
+Odsetki naliczone = K1 * r = ${capitalYear1End} * ${annualRate/100} = ${interestYear2} zł
+Podatek = 19% * ${interestYear2} = 0.19 * ${interestYear2} = ${taxYear2} zł
+Odsetki netto = ${interestYear2} - ${taxYear2} = ${netInterestYear2} zł
+Kapitał na koniec roku 2 (K2) = K1 + Odsetki netto = ${capitalYear1End} + ${netInterestYear2} = ${finalAmountWithTax} zł
+
+Po ${years} latach Pan Jan będzie miał ${finalAmountWithTax.toString().replace('.',',')} zł.`;
+                 return { question, answer, explanation };
+             }
+         },
+         // Typ 30: Stężenie procentowe - mieszanie roztworów (prostszy wariant - dolanie wody)
+         {
+             topic: 'procenty', topicName: 'Procenty, obniżki, podwyżki', id: 'proc_stezenieMieszanieWoda',
+             generator: () => {
+                 const initialMass = getRandomInt(100, 500); // g roztworu
+                 const initialConcentration = getRandomInt(10, 40); // %
+                 const addedWater = getRandomInt(50, initialMass); // g wody
+
+                 const initialSubstanceMass = initialMass * (initialConcentration / 100);
+                 const finalMass = initialMass + addedWater;
+                 const finalConcentration = round((initialSubstanceMass / finalMass) * 100, 1);
+
+                 const question = `Do ${initialMass} g roztworu soli o stężeniu ${initialConcentration}% dolano ${addedWater} g wody. Jakie jest stężenie procentowe otrzymanego roztworu?`;
+                 const answer = `${finalConcentration.toString().replace('.',',')}%`;
+                 const explanation = `1. Obliczamy masę substancji rozpuszczonej (soli) w roztworze początkowym:
+   Masa soli = (Masa roztworu) * (Stężenie / 100)
+   Masa soli = ${initialMass} g * (${initialConcentration} / 100) = ${round(initialSubstanceMass, 2)} g
+
+2. Dolanie wody nie zmienia masy substancji rozpuszczonej (soli). Zmienia się tylko masa całego roztworu.
+   Nowa masa roztworu = Masa początkowa + Masa dolanej wody
+   Nowa masa roztworu = ${initialMass} g + ${addedWater} g = ${finalMass} g
+
+3. Obliczamy nowe stężenie procentowe:
+   Nowe stężenie = (Masa substancji / Nowa masa roztworu) * 100%
+   Nowe stężenie = (${round(initialSubstanceMass, 2)} g / ${finalMass} g) * 100%
+   Nowe stężenie = ${round(initialSubstanceMass / finalMass, 3)} * 100%
+   Nowe stężenie ≈ ${finalConcentration.toString().replace('.',',')}%`;
+                 return { question, answer, explanation };
+             }
+         },
+          // --- Dodaj tu kolejne generatory zadań dla każdej kategorii ---
+         // --- Staraj się tworzyć różnorodne scenariusze w ramach każdego tematu ---
+
+    ]; // Koniec tablicy questionGenerators
+
+    // Reszta kodu JavaScript (DOM Elements, populateTopics, generateQuestion, normalizeAnswer, areAnswersEquivalent, checkAnswer, Event Listeners, Initialization)
+    // pozostaje BEZ ZMIAN w stosunku do poprzedniej wersji.
+
+    // DOM Elements
+    const topicOptionsContainer = document.getElementById('topicOptions');
+    const generateBtn = document.getElementById('generateBtn');
+    const questionArea = document.getElementById('questionArea');
+    const questionText = document.getElementById('questionText');
+    const answerSection = document.getElementById('answerSection');
+    const userAnswerInput = document.getElementById('userAnswer');
+    const checkBtn = document.getElementById('checkBtn');
+    const feedbackArea = document.getElementById('feedbackArea');
+    const resultText = document.getElementById('result');
+    const explanationText = document.getElementById('explanation');
+
+    let currentGeneratedQuestion = null; // Store the generated { question, answer, explanation, acceptedAnswers? } object
+    let availableTopics = {};
+
+    // --- Functions ---
+
+    // Helper function for explanation in geo_katyTrojkatZaleznosc
+    function explanationBasedOnDepDesc(alpha, beta, gamma, depDesc) {
+        if (depDesc.includes('większy') && depDesc.includes('od niego') && !depDesc.includes('trzeci')) {
+            let diff = Math.abs(beta - alpha);
+            return `Wiemy, że β = α + ${diff}° = ${alpha}° + ${diff}° = ${beta}°`
+        } else if (depDesc.includes('mniejszy') && depDesc.includes('od niego')) {
+             let diff = Math.abs(beta - alpha);
+            return `Wiemy, że β = α - ${diff}° = ${alpha}° - ${diff}° = ${beta}°`
+        } else if (depDesc.includes('razy większy')) {
+             let mult = Math.round(beta/alpha);
+            return `Wiemy, że β = ${mult} * α = ${mult} * ${alpha}° = ${beta}°`
+        } else if (depDesc.includes('trzeci') && depDesc.includes('większy')) {
+             let diff = Math.abs(gamma - alpha);
+             return `Wiemy, że γ = α + ${diff}° = ${alpha}° + ${diff}° = ${gamma}°. Wtedy β = 180° - α - γ = 180° - ${alpha}° - ${gamma}° = ${beta}°`
+        }
+         // Default fallback if parsing fails
+        return `Wykorzystujemy podaną zależność: ${depDesc} i sumę kątów 180° do obliczenia β = ${beta}° i γ = ${gamma}°`;
+    }
+
+
+    function populateTopics() {
+        questionGenerators.forEach(g => {
+            if (!availableTopics[g.topic]) {
+                availableTopics[g.topic] = g.topicName;
+            }
+        });
+
+        topicOptionsContainer.innerHTML = ''; // Clear existing options before repopulating
+        for (const topicId in availableTopics) {
+            const topicName = availableTopics[topicId];
+            const wrapper = document.createElement('div'); // Wrapper for input + label
+
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.id = topicId;
+            input.name = 'topic';
+            input.value = topicId;
+
+            const label = document.createElement('label');
+            label.htmlFor = topicId;
+            label.textContent = topicName;
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(label);
+            topicOptionsContainer.appendChild(wrapper);
+        }
+    }
+
+    function generateQuestion() {
+        const selectedTopicInput = document.querySelector('input[name="topic"]:checked');
+        if (!selectedTopicInput) {
+            alert("Proszę wybrać temat!");
+            return;
+        }
+        const selectedTopic = selectedTopicInput.value;
+
+        const generatorsInTopic = questionGenerators.filter(g => g.topic === selectedTopic);
+        if (generatorsInTopic.length === 0) {
+            questionText.textContent = "Brak generatorów zadań dla wybranego tematu.";
+            return;
+        }
+
+        const randomIndex = Math.floor(Math.random() * generatorsInTopic.length);
+        const selectedGenerator = generatorsInTopic[randomIndex];
+
+        try {
+            currentGeneratedQuestion = selectedGenerator.generator();
+             // Add the topic to the generated question object for later use if needed
+             currentGeneratedQuestion.topic = selectedTopic;
+             currentGeneratedQuestion.id = selectedGenerator.id;
+
+        } catch (error) {
+            console.error(`Błąd podczas generowania pytania (ID: ${selectedGenerator.id}, Topic: ${selectedTopic}):`, error);
+            questionText.textContent = "Wystąpił błąd podczas generowania zadania. Spróbuj ponownie lub wybierz inny temat.";
+            questionArea.style.display = 'none';
+            answerSection.style.display = 'none';
+            feedbackArea.style.display = 'none';
+            return;
+        }
+
+
+        questionText.textContent = currentGeneratedQuestion.question;
+        questionArea.style.display = 'block';
+        answerSection.style.display = 'block';
+        userAnswerInput.value = '';
+        userAnswerInput.disabled = false;
+        checkBtn.disabled = false;
+        feedbackArea.style.display = 'none';
+        feedbackArea.className = '';
+        resultText.textContent = '';
+        explanationText.textContent = '';
+    }
+
+     function normalizeAnswer(answer) {
+         if (typeof answer !== 'string') {
+             answer = String(answer);
+         }
+        let norm = answer.toLowerCase()
+            // General replacements
+            .replace(/,/g, '.') // Comma to dot
+            .replace(/\s+/g, ' ') // Multiple spaces to single
+             .replace(/około|ok\.|≈/g, '') // Approx markers
+             .replace(/\bpodatek\b/g,'')
+             .replace(/\bvat\b/g,'')
+             .replace(/\bnetto\b/g,'')
+             .replace(/\bbrutto\b/g,'')
+             .replace(/\bodsetki\b/g,'')
+             .replace(/\bkapitał\b/g,'')
+             .replace(/\blos\b/g,'') // For losowe słowa
+             .replace(/\bosoba\b \d:/g, '') // Usuń "osoba 1:", "osoba 2:" itp.
+             .replace(/\bdzień\b \d:/g, '') // Usuń "dzień 1:", "dzień 2:" itp.
+             .replace(/\b[a-zA-Złśćńźżóęą]+\b:/g, '') // Usuń "nazwa:"
+             // Units (keep % for now)
+             .replace(/złoty|złotych|zł|pln/g, '')
+             .replace(/euro|eur/g, '')
+             .replace(/kilometrów na godzinę|km\/h/g, '')
+             .replace(/metrów na sekundę|m\/s/g, '')
+             .replace(/kilometrów|kilometra|km/g, '')
+             .replace(/metrów|metra|m/g, '') // also meters
+             .replace(/litrów|litry|l/g, '')
+             .replace(/centymetrów sześciennych|cm3|cm\^3/g, '') // volume
+             .replace(/centymetrów kwadratowych|cm2|cm\^2/g, '') // area
+             .replace(/centymetrów|cm/g, '')
+             .replace(/gramów|g/g, '')
+             .replace(/kilogramów|kg/g, '')
+             .replace(/godzin|godziny|godz|h/g, '')
+             .replace(/minut|min/g, '')
+             .replace(/sekund|sek|s/g, '') // avoid conflict with 's' in m/s before unit removal
+             .replace(/dni/g, '')
+             .replace(/lat|lata/g, '')
+             .replace(/stopni|°/g, '')
+             .replace(/sztuk|sztuki|szt/g, '')
+             .replace(/monet|monety/g,'')
+             .replace(/naklejek/g,'')
+             .replace(/drzew|drzewa/g,'')
+             .replace(/uczestników|uczestnicy/g,'')
+             .replace(/pracowników|pracownicy/g,'')
+             .replace(/babeczek/g,'')
+            // Separators and structure
+            .replace(/\s*i\s*oraz\s*/g, ',') // "i oraz" to comma
+             .replace(/\s*i\s*/g, ',') // "i" to comma
+            .replace(/\s*oraz\s*/g, ',') // "oraz" to comma
+            .replace(/[; ]+/g, ',') // Semicolon/space to comma
+             .replace(/,\s*,/g, ',') // multiple commas
+             .replace(/^,|,$/g, '') // Leading/trailing comma
+             .replace(/\s/g,'') // Remove all remaining spaces for direct comparison
+             .trim();
+
+
+         // Keep % symbol if present at the end
+        const hasPercent = answer.trim().endsWith('%');
+         if (hasPercent && !norm.endsWith('%')) {
+            norm += '%';
+         }
+         // Handle '1:xxxx' format for scale
+         if (/^1:\d+$/.test(answer.replace(/\s/g,''))) {
+             return answer.replace(/\s/g,''); // Return scale format directly
+         }
+
+        // Handle specific fraction representations AFTER other cleaning
+        if (currentGeneratedQuestion) {
+             const correctNorm = currentGeneratedQuestion.answer.toLowerCase().replace(/,/g, '.').replace(/\s/g,'');
+              if ((norm === '1/9' || norm === '0.11' || norm === '0.111') && correctNorm.includes('1/9')) return '1/9';
+              if ((norm === '1/3' || norm === '0.33' || norm === '0.333') && correctNorm.includes('1/3')) return '1/3';
+              if ((norm === '2/3' || norm === '0.67' || norm === '0.66' || norm === '0.666' || norm === '0.667') && correctNorm.includes('2/3')) return '2/3';
+              if ((norm === '1/2' || norm === '0.5') && correctNorm.includes('1/2')) return '1/2';
+              // Handle Pi representation (assuming correct answer includes π or pi)
+               if ((norm === 'pi' || norm === 'π') && (correctNorm.includes('pi') || correctNorm.includes('π'))) {
+                    // Try to match the number part if answer is like '25pi'
+                    const numPartUser = norm.replace(/pi|π/, '');
+                    const numPartCorrect = correctNorm.replace(/pi|π/, '');
+                    if (numPartUser === numPartCorrect) return correctNorm; // Return the full '25pi' style correct answer
+               } else if (correctNorm.includes('pi') || correctNorm.includes('π')) {
+                   // If correct answer has pi, but user entered number, compare number part
+                   const numPartUser = norm;
+                   const numPartCorrect = correctNorm.replace(/pi|π/, '');
+                   if (Math.abs(Number(numPartUser) - Number(numPartCorrect)) < 0.01) {
+                       return correctNorm; // Consider it a match if number part is close
+                   }
+               }
+        }
+
+
+        // Sort comma-separated values if present
+        if (norm.includes(',')) {
+            norm = norm.split(',').map(s => s.trim()).filter(s => s !== '').sort().join(',');
+        }
+
+        return norm;
+    }
+
+    function areAnswersEquivalent(userNorm, correctNorm, acceptedAnswers = []) {
+        const alternatives = [correctNorm, ...acceptedAnswers.map(normalizeAnswer)];
+        console.log("Normalized User:", userNorm);
+        console.log("Normalized Correct/Accepted:", alternatives);
+
+
+        for (const altNorm of alternatives) {
+             if (userNorm === altNorm) return true;
+
+             // Handle Pi case: check if user wrote number*pi or number*3.14
+             if (altNorm.includes('π') || altNorm.includes('pi')) {
+                  const correctNumPart = parseFloat(altNorm.replace(/[a-zπ%]/g, ''));
+                  const userNumPart = parseFloat(userNorm.replace(/[a-zπ%]/g, ''));
+                  const correctPiVal = correctNumPart * Math.PI;
+                  const correctApproxVal = correctNumPart * 3.14; // Common approx
+
+                   // Check if user entered number with pi symbol
+                   if ((userNorm.includes('π') || userNorm.includes('pi')) && Math.abs(userNumPart - correctNumPart) < 0.01) return true;
+
+                   // Check if user entered numerical approximation
+                   if (!isNaN(userNumPart) && (Math.abs(userNumPart - correctPiVal) < 0.1 || Math.abs(userNumPart - correctApproxVal) < 0.1)) return true;
+             }
+
+             // Try numerical comparison with tolerance for lists/single numbers
+             const userParts = userNorm.replace('%','').split(','); // Remove % for numerical comparison
+             const altParts = altNorm.replace('%','').split(',');
+
+             if (userParts.length !== altParts.length) continue; // Skip if different number of parts
+
+             const userNums = userParts.map(Number).filter(n => !isNaN(n));
+             const altNums = altParts.map(Number).filter(n => !isNaN(n));
+
+             if (userNums.length === userParts.length && altNums.length === altParts.length) {
+                 userNums.sort((a, b) => a - b);
+                 altNums.sort((a, b) => a - b);
+
+                 if (userNums.length !== altNums.length) continue;
+
+                 const tolerance = 0.02; // Slightly increased tolerance
+                 let match = true;
+                 for (let i = 0; i < userNums.length; i++) {
+                     if (Math.abs(userNums[i] - altNums[i]) > tolerance) {
+                         match = false;
+                         break;
+                     }
+                 }
+                 if (match) return true; // All numbers match within tolerance
+             }
+         }
+
+        return false; // No match found
+    }
+
+
+    function checkAnswer() {
+        if (!currentGeneratedQuestion) return;
+
+        const userAnswer = userAnswerInput.value;
+        const normalizedUserAnswer = normalizeAnswer(userAnswer);
+        const normalizedCorrectAnswer = normalizeAnswer(currentGeneratedQuestion.answer);
+        const acceptedAnswers = currentGeneratedQuestion.acceptedAnswers || [];
+
+        feedbackArea.style.display = 'block';
+        explanationText.textContent = `Wyjaśnienie:\n${currentGeneratedQuestion.explanation}`;
+
+        if (areAnswersEquivalent(normalizedUserAnswer, normalizedCorrectAnswer, acceptedAnswers)) {
+            resultText.textContent = 'Poprawna odpowiedź!';
+            feedbackArea.className = 'correct';
+        } else {
+            resultText.textContent = 'Niepoprawna odpowiedź.';
+            feedbackArea.className = 'incorrect';
+            resultText.textContent += ` Poprawna odpowiedź to: ${currentGeneratedQuestion.answer}`;
+        }
+
+        userAnswerInput.disabled = true;
+        checkBtn.disabled = true;
+    }
+
+
+    // --- Event Listeners ---
+    generateBtn.addEventListener('click', generateQuestion);
+    checkBtn.addEventListener('click', checkAnswer);
+    userAnswerInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !checkBtn.disabled) {
+            event.preventDefault();
+            checkBtn.click();
+        }
+    });
+
+    // --- Initialization ---
+    populateTopics();
+    checkBtn.disabled = true;
+    userAnswerInput.disabled = true;
+
+
+</script>
+
+</body>
+</html>
